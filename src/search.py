@@ -1,6 +1,11 @@
 
-from config import render_html
+import web
+from flipkart import flipkart
+from utils import serialize
 
-class Search(object):
+class search(object):
     def GET(self):
-        return render_html('Not implemented')
+        data = web.input(query='')
+        f = flipkart()
+        ret = f.search(data['query'])
+        return serialize(ret)

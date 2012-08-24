@@ -2,12 +2,12 @@
 import web
 import config
 from config import render
-from index import Index
-from search import Search
+from index import index
+from search import search
 
 urls = (
-        r'/', 'Index',
-        r'/search', 'Search',
+        r'/', 'index',
+        r'/search', 'search',
         )
 
 app = web.application(urls, globals(), autoreload=True)
