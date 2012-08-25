@@ -2,8 +2,9 @@
 import web
 from config import db
 from flipkart import flipkart
-from utils import yqlquery, keyfind
+from utils import yqlquery, serialize
 from dbutils import fetch_prices
+from analyser import monthly_variance, order
 
 class product(object):
     def GET(self):
@@ -15,7 +16,7 @@ class product(object):
             if len(results):
                 result = results[0]
                 ret['name'], ret['url'] = result['name'], result['url']
-            
+
             query = "select * from contentanalysis.analyze where text='%s'" % ret['name']
             anal = yqlquery(query)
             try:
@@ -28,6 +29,14 @@ class product(object):
                 ret['region'] = 'unknown'
 
             f = flipkart()
-            ret['price'] = {'past':fetch_prices(url), 'present':f.get_price(url)}
+            past_prices = fetch_prices(url)
+            cur_price   = f.get_price(url)
+            ret['price'] = {'past':past_prices, 'present':cur_price}
 
-        return ret
+            prices = map(lambda x:x[1],past_prices)
+            price_trend = order(prices)
+            variances = monthly_variance(past_prices)
+            variance_trend = order(variances)
+            ret['trend'] = {'price':[price_trend,prices],'variance':[variance_trend,variances]}
+
+        return serialize(ret)
